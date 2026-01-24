@@ -1,0 +1,388 @@
+{
+  "name": "AI-E-mail Classifier & Auto-Responder",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "a195db7a-7f1e-48f2-acc6-81ed5c429a2e",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "7IgErtri2lQcZBC5",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "messageId": "19bf019c2949107a"
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "63c6dc15-237a-404b-8d30-6898d2c7342e",
+      "name": "Get a message",
+      "webhookId": "4c67b187-1ad3-4c00-a06a-bcb23409246f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "7IgErtri2lQcZBC5",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  from: $json.From || '',\n  subject: $json.Subject || '',\n  body: $json.snippet || ''\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "df3ac4e9-590d-400e-b4bd-7214efae46f0",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "601614ac-d492-485a-bb83-f04583ef5f06",
+              "name": "email_input",
+              "value": "=From: {{$json.from}}\nSubject: {{$json.subject}}\n\n{{$json.body}}\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        624,
+        0
+      ],
+      "id": "b7476b6d-2828-4edb-a40a-dd0ba51bcb95",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "Je bent een e-mail classifier.\nClassificeer elke e-mail in EXACT één categorie:\n- Sales\n- Support\n- HR\n- Other\n\nGeef ALLEEN geldige JSON terug in dit formaat:\n{\n  \"category\": \"\",\n  \"confidence\": 0\n}\n"
+            },
+            {
+              "content": "={{$json.email_input}}\n"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        832,
+        0
+      ],
+      "id": "730d9e06-4483-4ade-856c-54af5626366a",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "pJ7IJx2aI4YdIn9z",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "49977b88-c9b4-4d17-906a-b4883e45d5b0",
+              "leftValue": "={{$json.confidence}}\n",
+              "rightValue": "={{ 0.7 }}",
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1328,
+        0
+      ],
+      "id": "3ea5959f-9843-41f5-bbb8-5d8575d18047",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fc189f26-7993-4351-be45-492945b10151",
+              "name": "category",
+              "value": "={{ JSON.parse($json.output[0].content[0].text).category }}\n",
+              "type": "string"
+            },
+            {
+              "id": "b8ff9485-7f08-4e93-b051-901eeaf1a1f5",
+              "name": "confidence",
+              "value": "={{ JSON.parse($json.output[0].content[0].text).confidence }}\n",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1136,
+        0
+      ],
+      "id": "0998e2aa-74fd-4ad8-8eb9-bc821bea6e11",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$json.category}}",
+                    "rightValue": "Sales",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "396ee469-bc33-4cfa-9fa7-fcf8c208d9c4"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "38b15c29-4749-45b2-bdb4-3bb53a7c0143",
+                    "leftValue": "={{$json.category}}",
+                    "rightValue": "Support",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "cfd7c29c-ae36-43fa-8e02-a8985b8a7836",
+                    "leftValue": "={{$json.category}}",
+                    "rightValue": "HR",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "2892c242-9d6b-470d-b776-a2496dcd4c04",
+                    "leftValue": "={{$json.category}}",
+                    "rightValue": "Other",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        1536,
+        -96
+      ],
+      "id": "98ebd6e7-eb9f-4440-9c9c-609da4d29536",
+      "name": "Switch"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a message": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "25aec77c-048a-40f3-8901-562114aeac1c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5dde7816d102929505e06f082916113a5da779a70b5c674a04bfb1a774a96290"
+  },
+  "id": "Eqp27m6TTM62XrVWkXnwM",
+  "tags": []
+}
