@@ -1,6 +1,7 @@
 ## AI Gmail E-mail Classifier & Auto-Responder (n8n)
 Dit project is een AI-gestuurde Gmail-inboxautomatisering, gebouwd met n8n en OpenAI.
-Het systeem classificeert automatisch binnenkomende e-mails en routeert deze naar de juiste workflow op basis van inhoud en confidence score.
+Het systeem classificeert automatisch binnenkomende e-mails en
+routeert deze naar de juiste workflow op basis van inhoud en confidence score.
 ## 🚀 Wat doet dit project?
 Luistert naar nieuwe binnenkomende Gmail-e-mails
 Extraheert afzender, onderwerp en inhoud
@@ -10,7 +11,8 @@ Support
 HR
 Overig
 Geeft een confidence score terug
-Routeert e-mails met conditionele logica (IF + Switch)
+Routeert e-mails met conditionele logica
+(IF + Switch)
 Ontworpen om eenvoudig uit te breiden met:
 Gmail-labels
 Automatische antwoorden
