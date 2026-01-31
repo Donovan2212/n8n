@@ -1,0 +1,225 @@
+{
+  "name": "AI Sales Lead Scoring System",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lead-in",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "23e0ad90-6a8a-4ee0-af56-14227dac0e78",
+      "name": "Webhook",
+      "webhookId": "065483b6-d160-418a-a4ce-d4fce03c4345"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.all();\nconst lead = input[0].json.body ?? input[0].json;\n\nreturn [{\n  lead: {\n    name: lead.name?.trim() || \"\",\n    email: lead.email?.toLowerCase().trim() || \"\",\n    company: lead.company?.trim() || \"\",\n    job_title: lead.job_title?.trim() || \"\",\n    message: lead.message?.trim() || \"\",\n    country: lead.country?.toUpperCase() || \"UNKNOWN\",\n    source: lead.source || \"webhook\"\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "152b3371-0ab9-4b75-995b-4cc243b12fb2",
+      "name": "Normalize Lead Data"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.all();\nconst lead = input[0].json.lead;\n\nlet company_size = \"unknown\";\nlet industry = \"unknown\";\nlet icp_fit = \"low\";\nlet decision_maker = \"low\";\n\n// simpele business-logica (mock)\nif (lead.job_title?.toLowerCase().includes(\"head\") ||\n    lead.job_title?.toLowerCase().includes(\"manager\")) {\n  decision_maker = \"high\";\n}\n\nif (lead.company?.toLowerCase().includes(\"bv\")) {\n  company_size = \"11-50\";\n}\n\nif (lead.message?.toLowerCase().includes(\"ai\") ||\n    lead.message?.toLowerCase().includes(\"automation\")) {\n  icp_fit = \"high\";\n}\n\nindustry = \"SaaS\"; // mock industry\n\nreturn [{\n  lead: {\n    ...lead,\n    company_size,\n    industry,\n    icp_fit,\n    decision_maker\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "d023e42b-4f93-45e0-b59b-158cfbdd0372",
+      "name": "Mock Data Enrichment"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "={{ JSON.stringify($json.lead) }}\n"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        624,
+        0
+      ],
+      "id": "62b401a6-861f-4bd2-8da2-308495bea78c",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "pJ7IJx2aI4YdIn9z",
+          "name": "OpenAi account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.all();\nconst lead = input[0].json.lead;\n\nlet intent = \"low\";\nlet urgency = \"low\";\nlet budget = \"low\";\nlet lead_quality = \"cold\";\nlet reasoning = \"Low engagement signal based on provided information.\";\n\nif (lead.icp_fit === \"high\") {\n  intent = \"high\";\n}\n\nif (lead.decision_maker === \"high\") {\n  urgency = \"medium\";\n}\n\nif (lead.company_size !== \"unknown\") {\n  budget = \"medium\";\n}\n\nif (intent === \"high\" && urgency !== \"low\") {\n  lead_quality = \"hot\";\n  reasoning = \"Decision maker from an ICP-fit company showing interest in AI automation.\";\n} else if (intent === \"high\") {\n  lead_quality = \"warm\";\n  reasoning = \"ICP-fit company with interest, but urgency is unclear.\";\n}\n\nreturn [{\n  ai_analysis: {\n    intent,\n    urgency,\n    budget,\n    lead_quality,\n    reasoning\n  },\n  lead\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        976,
+        0
+      ],
+      "id": "5bc8b62b-9f7d-44b5-a5f0-5d12cc2645c5",
+      "name": "Mock AI Analysis"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.all();\nconst ai = input[0].json.ai_analysis;\nconst lead = input[0].json.lead;\n\nlet score = 0;\n\n// AI-based scoring\nif (ai.intent === \"high\") score += 30;\nif (ai.intent === \"medium\") score += 15;\n\nif (ai.urgency === \"high\") score += 25;\nif (ai.urgency === \"medium\") score += 10;\n\nif (ai.budget === \"high\") score += 20;\nif (ai.budget === \"medium\") score += 10;\n\n// Business enrichment scoring\nif (lead.decision_maker === \"high\") score += 15;\nif (lead.icp_fit === \"high\") score += 10;\n\n// Safety cap\nif (score > 100) score = 100;\n\nreturn [{\n  lead,\n  ai_analysis: ai,\n  score\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1184,
+        0
+      ],
+      "id": "8e223d0c-9fb0-451e-b699-7a25a7ce92bd",
+      "name": "Lead Scoring"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.all();\nconst score = input[0].json.score;\nconst lead = input[0].json.lead;\nconst ai = input[0].json.ai_analysis;\n\nlet label = \"cold\";\nlet priority = \"low\";\n\nif (score >= 70) {\n  label = \"hot\";\n  priority = \"high\";\n} else if (score >= 40) {\n  label = \"warm\";\n  priority = \"medium\";\n}\n\nreturn [{\n  lead,\n  ai_analysis: ai,\n  score,\n  classification: {\n    label,\n    priority\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1392,
+        0
+      ],
+      "id": "d47d1f7c-f73c-4a87-a3ce-7b58fd587126",
+      "name": "Lead Classification"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.all();\nconst data = input[0].json;\n\nconst label = data.classification.label;\n\nlet action = \"\";\nlet owner = \"sales@company.com\";\nlet sla = \"\";\n\nif (label === \"hot\") {\n  action = \"Create CRM task + notify sales immediately\";\n  sla = \"Call within 1 hour\";\n}\n\nif (label === \"warm\") {\n  action = \"Add to nurture campaign\";\n  sla = \"Follow up within 48 hours\";\n}\n\nif (label === \"cold\") {\n  action = \"Store for long-term nurturing\";\n  sla = \"No immediate action\";\n}\n\nreturn [{\n  lead: data.lead,\n  score: data.score,\n  classification: data.classification,\n  action_plan: {\n    action,\n    owner,\n    sla\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        0
+      ],
+      "id": "de275892-5bab-4cf5-aacd-2fc4954bc9d4",
+      "name": "Lead Actions"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalize Lead Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Lead Data": {
+      "main": [
+        [
+          {
+            "node": "Mock Data Enrichment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mock Data Enrichment": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Mock AI Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mock AI Analysis": {
+      "main": [
+        [
+          {
+            "node": "Lead Scoring",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lead Scoring": {
+      "main": [
+        [
+          {
+            "node": "Lead Classification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lead Classification": {
+      "main": [
+        [
+          {
+            "node": "Lead Actions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "fa2cc5eb-1eb0-4bc4-aa7f-8133596c6e89",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5dde7816d102929505e06f082916113a5da779a70b5c674a04bfb1a774a96290"
+  },
+  "id": "mz9Wyx0q-LrXIiL5Hgecs",
+  "tags": []
+}
