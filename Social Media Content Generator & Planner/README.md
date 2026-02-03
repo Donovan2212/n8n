@@ -1,81 +1,80 @@
-
 # Social Media Content Generator & Planner
 
-An automated social media content workflow built with **n8n** and **Notion**.  
-This project demonstrates how to fetch, process, schedule, and publish content using workflow automation and external APIs.
+Een geautomatiseerde socialmedia-workflow gebouwd met **n8n** en **Notion**.  
+Dit project laat zien hoe content automatisch kan worden opgehaald, verwerkt, ingepland en gepubliceerd met behulp van workflow-automatisering en externe API’s.
 
 ---
 
-## 🚀 Overview
+## 🚀 Overzicht
 
-The workflow retrieves content from a Notion database, filters items marked as **Ready**, formats them into social media posts, schedules publishing, and sends them via an HTTP request (API/webhook).
+De workflow haalt content op uit een Notion-database, filtert items met de status **Ready**, formatteert deze tot socialmediaposts, plant de publicatie in en verstuurt de posts via een HTTP-request (API/webhook).
 
-The goal of this project is to demonstrate practical automation skills, API integration, and state-based workflow logic.
-
----
-
-## ✨ Features
-
-- Fetches content from a Notion database
-- Filters items by status (`Ready`)
-- Formats social media post text dynamically
-- Supports scheduled posting using wait logic
-- Sends posts via HTTP request (API / webhook)
-- Prevents duplicate or premature posting
-- Modular and readable workflow design
+Het doel van dit project is om praktische automatiseringsvaardigheden, API-integratie en status-gedreven workflowlogica te demonstreren.
 
 ---
 
-## 🧠 Workflow Logic (High Level)
+## ✨ Functionaliteiten
 
-1. Trigger workflow manually
-2. Search Notion database for content
-3. Process and format post content
-4. Apply conditional logic (If nodes)
-5. Wait until scheduled publish time
-6. Send post via HTTP request
-7. End workflow cleanly
-
----
-
-## 🛠 Tech Stack
-
-- **n8n** – Workflow automation
-- **Notion API** – Content source
-- **JavaScript** – Custom logic (Code nodes)
-- **HTTP / Webhooks** – External API communication
+- Haalt content op uit een Notion-database  
+- Filtert items op status (`Ready`)  
+- Formatteert socialmediaposts dynamisch  
+- Ondersteunt geplande publicatie met wachttijd-logica  
+- Verstuurt posts via een HTTP-request (API / webhook)  
+- Voorkomt dubbele of voortijdige publicatie  
+- Modulaire en goed leesbare workflow-opzet  
 
 ---
 
-## 📦 Why This Project
+## 🧠 Workflowlogica (hoog niveau)
 
-This project was built to demonstrate:
+1. Start de workflow handmatig  
+2. Zoekt content in de Notion-database  
+3. Verwerkt en formatteert de postinhoud  
+4. Past conditionele logica toe (If-nodes)  
+5. Wacht tot het geplande publicatiemoment  
+6. Verstuurt de post via een HTTP-request  
+7. Rondt de workflow netjes af  
 
-- Workflow automation design
-- API-based integrations
-- Conditional and state-driven logic
-- Asynchronous processing (scheduled execution)
-- Clean project structure and completion
+---
 
-It reflects real-world automation use cases commonly found in startups and agencies.
+## 🛠 Technologieën
+
+- **n8n** – Workflow-automatisering  
+- **Notion API** – Contentbron  
+- **JavaScript** – Custom logica (Code-nodes)  
+- **HTTP / Webhooks** – Communicatie met externe API’s  
+
+---
+
+## 📦 Waarom dit project
+
+Dit project is gebouwd om te laten zien:
+
+- Ontwerp van workflow-automatiseringen  
+- Integratie met API’s  
+- Conditionele en status-gedreven logica  
+- Asynchrone verwerking (geplande uitvoering)  
+- Een nette en complete projectstructuur  
+
+Het project weerspiegelt realistische automatiseringscases zoals die vaak voorkomen bij startups en marketing-/contentbureaus.
 
 ---
 
 ## 📌 Status
 
-✅ Completed  
-✅ Portfolio-ready  
-✅ Suitable for junior or internship-level roles
+✅ Afgerond  
+✅ Geschikt voor portfolio  
+✅ Passend voor junior- of stagefuncties  
 
 ---
 
-## 📄 Notes
+## 📄 Opmerkingen
 
-This project focuses on workflow logic and integration.  
-Authentication and platform-specific posting (e.g. LinkedIn API) can be added as extensions.
+Dit project richt zich op workflowlogica en integraties.  
+Authenticatie en platform-specifieke publicatie (bijv. LinkedIn API) kunnen eenvoudig worden toegevoegd als uitbreiding.
 
 ---
 
-## 👤 Author
+## 👤 Auteur
 
-Built by **[Your Name]**  
+Gemaakt door **[Donovan]**
