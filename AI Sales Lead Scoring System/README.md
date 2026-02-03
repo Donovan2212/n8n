@@ -30,50 +30,56 @@ Deze aanpak wordt veel gebruikt in **enterprise automation**, **CRM-systemen** e
 
 ---
 
-## 🏗️ Architectuur overzicht
+## 🏗️ Architectuuroverzicht
 
-De workflow is opgebouwd als een lineaire, modulaire n8n-pipeline.
-Elke node heeft één duidelijke verantwoordelijkheid.
+De workflow is opgebouwd als een lineaire en modulaire n8n-pipeline.  
+Elke node heeft één duidelijke verantwoordelijkheid binnen het proces.
 
 De architectuur bestaat uit de volgende stappen:
 
-1. Webhook – Lead intake
-- Ontvangt nieuwe sales leads via een HTTP POST
-- Functioneert als entry-point van het systeem
-- Simuleert een formulier, CRM of marketingtool
+### 1. Webhook – Leadontvangst
+- Ontvangt nieuwe salesleads via een HTTP POST-verzoek  
+- Functioneert als het startpunt van het systeem  
+- Simuleert een formulier, CRM-systeem of marketingtool  
 
-2. Normalize Lead Data – Datacleaning
-- Normaliseert inkomende leaddata
-- Zorgt voor consistente veldnamen en datatypes
-- Verwijdert ruis en ongeldige input
+### 2. Normalize Lead Data – Datacleaning
+- Normaliseert de binnenkomende leaddata  
+- Zorgt voor consistente veldnamen en datatypes  
+- Verwijdert ongeldige of onvolledige invoer  
 
-3. Mock Data Enrichment – Context toevoegen
-- Verrijkt de lead met aanvullende (gesimuleerde) zakelijke context
-- Bijvoorbeeld: bedrijfstype, rol of leadbron
-- Bereidt data voor op analyse
+### 3. Mock Data Enrichment – Context toevoegen
+- Verrijkt de lead met aanvullende (gesimuleerde) zakelijke context  
+- Bijvoorbeeld: type bedrijf, functie of leadbron  
+- Bereidt de data voor op verdere analyse  
 
-4. AI Message Node – Bewust gedeactiveerd
-- Deze node is aanwezig als AI-integratiepunt
-- In de huidige versie gedeactiveerd
-- Laat zien waar AI later kan worden toegevoegd zonder refactor
+### 4. AI Message Node – Bewust gedeactiveerd
+- Deze node is aanwezig als toekomstig AI-integratiepunt  
+- In de huidige versie bewust gedeactiveerd  
+- Laat zien waar AI later kan worden toegevoegd zonder de workflow te herstructureren  
 
-5. Mock AI Analysis – Rule-based analyse
-- Analyseert sales-intentie met vaste logica
-- Simuleert AI-achtig redeneergedrag
-- Volledig transparant en uitlegbaar
+### 5. Mock AI Analysis – Regelgebaseerde analyse
+- Analyseert salesintentie op basis van vaste regels  
+- Simuleert AI-achtig redeneergedrag zonder gebruik van een echt model  
+- Volledig transparant en uitlegbaar  
 
-6. Lead Scoring – Scoreberekening
-- Kent een numerieke score toe (0–100)
-- Gebaseerd op vooraf gedefinieerde business rules
-- Elke score is reproduceerbaar
+### 6. Lead Scoring – Scoreberekening
+- Kent een numerieke score toe van 0 tot 100  
+- Gebaseerd op vooraf gedefinieerde businessregels  
+- Elke score is reproduceerbaar en controleerbaar  
 
-7. Lead Classification – Segmentatie
-- Classificeert leads als Hot, Warm of Cold
-- Op basis van score-drempels
-- Sluit aan op sales workflows
+### 7. Lead Classification – Segmentatie
+- Classificeert leads als **Hot**, **Warm** of **Cold**  
+- Op basis van vastgestelde score-drempels  
+- Sluit aan op gangbare salesprocessen  
 
-8. Lead Actions – Acties voor sales
-- Activeert vervolgstappen
-- Bijvoorbeeld: markeren voor opvolging of doorsturen
-- Eindpunt van de workflow
+### 8. Lead Actions – Acties voor sales
+- Activeert vervolgstappen voor het salesteam  
+- Bijvoorbeeld: markeren voor opvolging of doorsturen naar een CRM  
+- Vormt het eindpunt van de workflow  
+
+---
+
+*Deze architectuur is bewust opgezet met focus op duidelijkheid en uitlegbaarheid,  
+zodat het systeem geschikt is voor zowel technische als niet-technische stakeholders.*
+
 
