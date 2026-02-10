@@ -1,0 +1,387 @@
+{
+  "name": "Customer Support Ticket Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "8392c1f0-94db-44ec-b709-c233f8284b5c",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "7IgErtri2lQcZBC5",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Haal de e-mail body op\nlet text = $json.text || $json.html || \"\";\n\n// HTML tags verwijderen (voor Gmail/IMAP HTML mails)\ntext = text.replace(/<[^>]*>/g, \" \");\n\n// Stop bij veelgebruikte reply-markers\nconst stopPatterns = [\n  \"On .* wrote:\",\n  \"From:\",\n  \"Sent:\",\n  \"To:\",\n  \"Subject:\",\n  \"-----Original Message-----\"\n];\n\nfor (const pattern of stopPatterns) {\n  const regex = new RegExp(pattern, \"i\");\n  if (regex.test(text)) {\n    text = text.split(regex)[0];\n  }\n}\n\n// Signatures verwijderen\ntext = text.split(\"--\")[0];\ntext = text.split(\"Met vriendelijke groet\")[0];\ntext = text.split(\"Kind regards\")[0];\ntext = text.split(\"Sent from my\")[0];\n\n// Extra whitespace opruimen\ntext = text.replace(/\\s+/g, \" \").trim();\n\n// Veiligheidscheck\nif (text.length < 20) {\n  text = \"Geen duidelijke support vraag gevonden.\";\n}\n\n// Output\nreturn [\n  {\n    cleanText: text\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "29ccf266-8a68-4c57-84ee-7c76ea370654",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6c1ce7ed-9164-4658-ab39-37ee25ab0378",
+              "leftValue": "={{ $json.cleanText }}",
+              "rightValue": "error",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        416,
+        0
+      ],
+      "id": "af7eae39-fd65-4e05-aa10-4338a8d44a4f",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appY9sMTmEWmPdqfh",
+          "mode": "list",
+          "cachedResultName": "Support Ticket Workflow",
+          "cachedResultUrl": "https://airtable.com/appY9sMTmEWmPdqfh"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblar88UuU38sPCRt",
+          "mode": "list",
+          "cachedResultName": "Ticket",
+          "cachedResultUrl": "https://airtable.com/appY9sMTmEWmPdqfh/tblar88UuU38sPCRt"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Priority": "High",
+            "Status": "Open",
+            "Subject": "={{ $json.cleanText.slice(0,60) }}",
+            "Description": "={{ $json.cleanText }}",
+            "Source": "Email"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Subject",
+              "displayName": "Subject",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Description",
+              "displayName": "Description",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Priority",
+              "displayName": "Priority",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Source",
+              "displayName": "Source",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        672,
+        -96
+      ],
+      "id": "c6586e6e-ae7f-4c50-a84c-229086383e7e",
+      "name": "Create a record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "20aExX0BJS38fiAg",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appY9sMTmEWmPdqfh",
+          "mode": "list",
+          "cachedResultName": "Support Ticket Workflow",
+          "cachedResultUrl": "https://airtable.com/appY9sMTmEWmPdqfh"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblar88UuU38sPCRt",
+          "mode": "list",
+          "cachedResultName": "Ticket",
+          "cachedResultUrl": "https://airtable.com/appY9sMTmEWmPdqfh/tblar88UuU38sPCRt"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Description": "={{ $json.cleanText }}",
+            "Subject": "={{ $json.cleanText.slice(0,60) }}",
+            "Priority": "High",
+            "Status": "Open ",
+            "Source": "Email"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Subject",
+              "displayName": "Subject",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Description",
+              "displayName": "Description",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Priority",
+              "displayName": "Priority",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Source",
+              "displayName": "Source",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        624,
+        96
+      ],
+      "id": "2a40350c-a23b-402c-bbf3-c58c2ec8ffb1",
+      "name": "Create a record1",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "20aExX0BJS38fiAg",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "donavan.mohaloe@gmail.com",
+        "subject": "Test",
+        "emailType": "text",
+        "message": "No email this is an test",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        880,
+        16
+      ],
+      "id": "4417e70b-875d-4780-866d-b0a9a5ce4a5e",
+      "name": "Send a message",
+      "webhookId": "1c0130cb-5b5a-46cb-99ee-9bf863dbfcf2",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "7IgErtri2lQcZBC5",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Create a record",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create a record1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a record": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a record1": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "e792902d-1696-4fc4-957c-54c30aa015da",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5dde7816d102929505e06f082916113a5da779a70b5c674a04bfb1a774a96290"
+  },
+  "id": "0pZcZMO7fxwebwkaJLOnh",
+  "tags": []
+}
