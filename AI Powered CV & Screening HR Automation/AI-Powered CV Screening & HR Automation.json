@@ -1,0 +1,1161 @@
+{
+  "name": "AI-Powered CV Screening & HR Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Form C.V \n**Form about cv information explain that's a blank page when i do execute create an labels textarea dropdown title description and title table**",
+        "height": 368,
+        "width": 272
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -176
+      ],
+      "id": "50e9371b-097f-4431-991d-216552dc13bd",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Extract File \n**Extract file from pdf to binary**",
+        "height": 288,
+        "width": 208,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        288,
+        -96
+      ],
+      "id": "8343e775-01d5-496a-bb48-bff2aaaee520",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Basic LLM (Large Language Model) Chain\n**It's binary to text with ai model excuted**",
+        "height": 416,
+        "width": 384,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        576,
+        -224
+      ],
+      "id": "2b5422be-2451-4464-b2c7-c261b8dcb390",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Code in Javascript \n**text structure fixing \nmatchscore checking\naccepted or rejected**",
+        "height": 336,
+        "width": 272,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1056,
+        -144
+      ],
+      "id": "7b6960bd-4ae2-43ed-a349-4d1b3114d8f0",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const item of $input.all()) {\n  let text = item.json.text || '';\n  \n  // Verwijder eventuele thinking-tags (voor de zekerheid)\n  text = text.replace(/<think>[\\s\\S]*?<\\/think>/gi, '').trim();\n  item.json.aiOutput = text;\n  \n  // Probeer de match-score eruit te halen (zoekt naar patronen zoals \"score: 75\" of \"75/100\" of \"75 uit 100\")\n  const scoreMatch = text.match(/(\\d{1,3})\\s*(?:\\/100|uit de 100|\\/\\s*100)|score[:\\s]*(\\d{1,3})/i);\n  const score = scoreMatch ? parseInt(scoreMatch[1] || scoreMatch[2]) : null;\n  \n  item.json.matchScore = score;\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        0
+      ],
+      "id": "28e4a5d5-7970-4192-8b45-fd7bd6f2db7e",
+      "name": "text change"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyseer het volgende CV en geef terug:\n1. Een korte samenvatting\n2. Sterke punten van de kandidaat\n3. Een match-score (0-100) voor de functie \"Automation AI\"\n\nCV-tekst:\n{{ $json.text }}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        688,
+        0
+      ],
+      "id": "4700360b-4c5f-4edf-98f4-bc992f77f6a3",
+      "name": "binary to text"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "=C_V",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        352,
+        0
+      ],
+      "id": "14e61570-3ac6-4539-9ae4-823a6a533a41",
+      "name": "PDF to Binary"
+    },
+    {
+      "parameters": {
+        "formTitle": "Form C.V",
+        "formDescription": "It's about c.v information submission application job.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Surname",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email",
+              "fieldType": "email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Phone",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Why you wanna work at our company?",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "Function",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Automation AI"
+                  },
+                  {
+                    "option": "Business Agency"
+                  },
+                  {
+                    "option": "Software Engineer"
+                  },
+                  {
+                    "option": "Cloud Artchitect"
+                  },
+                  {
+                    "option": "Network Engineer"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "C.V",
+              "fieldType": "file"
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "id": "7153b1c2-190b-4a55-98d3-ed103e974ecb",
+      "name": "CV Form",
+      "webhookId": "0bca286d-92c7-4a54-a60d-da38aa67561a"
+    },
+    {
+      "parameters": {
+        "model": "qwen3:8b",
+        "options": {
+          "think": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmOllama",
+      "typeVersion": 1,
+      "position": [
+        848,
+        -112
+      ],
+      "id": "721139b6-d99f-4a80-9e67-f97114e6dc3a",
+      "name": "qwen3:8b",
+      "credentials": {
+        "ollamaApi": {
+          "id": "0W43FbasueRtbj1r",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## IF Else statement \n**Checking Score If Else statement score true or false greater than 70 true below 70 false**",
+        "height": 400,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        -160
+      ],
+      "id": "b75ffbe9-e6e5-44bb-ab3b-a3a7863f119c",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Edit Fields\n\n**Result accepted or rejection score from if else statement**",
+        "height": 880,
+        "width": 224,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1792,
+        -496
+      ],
+      "id": "9cc10053-86b9-45d9-b5cb-0ba0c974b061",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e82a157e-aaeb-4f05-8a73-de94440e39eb",
+              "name": "emailBody",
+              "value": "=Beste {{ $('CV Form').item.json.Name }},\n\nBedankt voor je sollicitatie. Na beoordeling van je CV hebben we helaas besloten niet verder te gaan met jouw sollicitatie voor deze functie.\n\nWe wensen je veel succes met je verdere zoektocht.\n\nMet vriendelijke groet,\nHet team",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1840,
+        224
+      ],
+      "id": "f14b6b51-c9fa-4d27-a012-9ac6911d37c4",
+      "name": "answer cv score result"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f8d26ef1-6201-4911-8d3d-658b3ff450cb",
+              "name": "emailBody",
+              "value": "=Beste {{ $('CV Form').item.json.Name }},\n\nBedankt voor je sollicitatie voor de functie \"Automation AI\". Na beoordeling van je CV zijn we onder de indruk van jouw profiel en zouden we je graag uitnodigen voor een kennismakingsgesprek.\n\nTer voorbereiding, hier alvast een paar onderwerpen die aan bod komen:\n{{ $json.text }}\n\nWe nemen binnenkort contact met je op om een moment in te plannen.\n\nMet vriendelijke groet,\nHet team",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1856,
+        -288
+      ],
+      "id": "84b7e096-d922-467b-b66f-a6eb51fda506",
+      "name": "testing"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('CV Form').item.json.Email }}",
+        "subject": "Reaction on application",
+        "message": "={{ $json.emailBody }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2352,
+        -304
+      ],
+      "id": "2f594bf9-b5c7-49e4-82e4-682e1b522205",
+      "name": "Invited for an interview",
+      "webhookId": "99e50aa3-79bf-4030-b214-c4524c4265c3",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "7IgErtri2lQcZBC5",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('CV Form').item.json.Email }}",
+        "subject": "recation on you application",
+        "message": "={{ $json.emailBody }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2336,
+        224
+      ],
+      "id": "9875bcb8-d170-49ff-b987-06494a99e23d",
+      "name": "reaction on your application rejection",
+      "webhookId": "99e50aa3-79bf-4030-b214-c4524c4265c3",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "7IgErtri2lQcZBC5",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Gmail\n**Gmail invation application interview rejected and accepted**",
+        "height": 928,
+        "width": 320,
+        "color": "#8D8600"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2240,
+        -512
+      ],
+      "id": "00f662c9-a716-466e-bb1e-b20b7c4262cc",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1aN8RbdHHhxesoofIA8e11F-Q1y2HkgTi_8IQPCQlmLY",
+          "mode": "list",
+          "cachedResultName": "CV Screening - Applicant Overview",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aN8RbdHHhxesoofIA8e11F-Q1y2HkgTi_8IQPCQlmLY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Applicants",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aN8RbdHHhxesoofIA8e11F-Q1y2HkgTi_8IQPCQlmLY/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Datum": "={{ $now.format('dd-MM-yyyy') }}",
+            "Naam": "={{ $('CV Form').item.json.Name }}",
+            "Email": "={{ $('CV Form').item.json.Email }}",
+            "Functie": "={{ $('CV Form').item.json.Function }}",
+            "Score": "={{ $json.matchScore }}",
+            "Status": "Rejection"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Datum",
+              "displayName": "Datum",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Naam",
+              "displayName": "Naam",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Functie",
+              "displayName": "Functie",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Score",
+              "displayName": "Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2656,
+        -304
+      ],
+      "id": "0fd3dd11-96e9-41e0-ac49-34d017636466",
+      "name": "Log accepted application",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "tEoL7swlcCNuEwpQ",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1aN8RbdHHhxesoofIA8e11F-Q1y2HkgTi_8IQPCQlmLY",
+          "mode": "list",
+          "cachedResultName": "CV Screening - Applicant Overview",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aN8RbdHHhxesoofIA8e11F-Q1y2HkgTi_8IQPCQlmLY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Applicants",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aN8RbdHHhxesoofIA8e11F-Q1y2HkgTi_8IQPCQlmLY/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Datum": "={{ $now.format('dd-MM-yyyy') }}",
+            "Naam": "={{ $('CV Form').item.json.Name }}",
+            "Email": "={{ $('CV Form').item.json.Email }}",
+            "Functie": "={{ $('CV Form').item.json.Function }}",
+            "Score": "={{ $('text change').item.json.matchScore }}",
+            "Status": "Invited"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Datum",
+              "displayName": "Datum",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Naam",
+              "displayName": "Naam",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Functie",
+              "displayName": "Functie",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Score",
+              "displayName": "Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2640,
+        224
+      ],
+      "id": "fbe19e12-744c-409a-ba39-cc0be1286388",
+      "name": "Log rejected application",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "tEoL7swlcCNuEwpQ",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Spreadsheet \n**Spreadsheet The canvas remains organized and you can see at a glance which node belongs to which branch.**",
+        "height": 928,
+        "width": 320
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2560,
+        -512
+      ],
+      "id": "0add29d7-0e8d-43d1-8df8-862cade88ca9",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "095fe601-ede9-48d1-8f35-00cb1161ec72",
+              "leftValue": "={{ $json.text.length }}",
+              "rightValue": "={{ 10 }}",
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        512,
+        224
+      ],
+      "id": "8af06aa2-e171-4a94-a3d9-d747e3d92c1d",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "sendTo": "donavan.mohaloe@gmail.com",
+        "subject": "CV could not be read automatically",
+        "message": "=The CV of {{ $('CV Form').item.json.Name }} ({{ $('CV Form').item.json.Email }}) could not be read automatically. Check this CV manually.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        752,
+        240
+      ],
+      "id": "13285917-b67f-4822-bbc9-6ab86a2a0957",
+      "name": "HR review application",
+      "webhookId": "03518a3e-ef00-493b-8022-3ffacd0be29f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "7IgErtri2lQcZBC5",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "donavan.mohaloe@gmail.com",
+        "subject": "=New strong candidate: {{ $('CV Form').item.json.Name }}",
+        "message": "=A new strong candidate has joined for the position \"{{ $('CV Form').item.json.Function }}\":\n\nName: {{ $('CV Form').item.json.Name }}\nEmail: {{ $('CV Form').item.json.Email }}\nScore: {{ $('text change').item.json.matchScore }}\n\nAI Analysis Summary:\n{{ $('text change').item.json.aiOutput }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2080,
+        -304
+      ],
+      "id": "c63f9895-6d15-4bd8-8fb3-1c64d690ac52",
+      "name": "Notify HR",
+      "webhookId": "1e669637-607c-4b2a-9139-3b5edc960f9e",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "7IgErtri2lQcZBC5",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Gmail \n** Notify HR (Head Recruiting) Letting know application at the company**",
+        "height": 912,
+        "width": 224,
+        "color": "#5C0700"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2016,
+        -496
+      ],
+      "id": "3e35298f-b3d9-41f7-a230-410742e8eb71",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "model": "qwen3:8b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        1408,
+        -336
+      ],
+      "id": "e38a1a36-2dad-43ed-aee9-49bea406af6e",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "0W43FbasueRtbj1r",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('text change').item.json.matchScore }}",
+                    "rightValue": 70,
+                    "operator": {
+                      "type": "number",
+                      "operation": "gt"
+                    },
+                    "id": "66ca5081-b7a1-446f-90f5-523a25fff7ce"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "af03ef5a-2f39-41c9-a714-16e7d5fc7ad4",
+                    "leftValue": "={{ $('text change').item.json.matchScore > 50 && $('text change').item.json.matchScore <= 70 }}",
+                    "rightValue": true,
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "b9d1e5f0-28b2-4d20-ae36-52365118a7b2",
+                    "leftValue": "={{ $('text change').item.json.matchScore }}",
+                    "rightValue": 50,
+                    "operator": {
+                      "type": "number",
+                      "operation": "lte"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        1408,
+        16
+      ],
+      "id": "10fefa12-ff8b-4ce0-8920-daf23b093820",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "sendTo": "donavan.mohaloe@gmail.com ",
+        "subject": "=Doubtful case: assess manually - {{ $('CV Form').item.json.Name }}",
+        "message": "=This candidate scores in the borderline area and requires manual review:  Name: {{ $('CV Form').item.json.Name }}  Email: {{ $('CV Form').item.json.Email }} Job Title: {{ $('CV Form').item.json.Function }} Score: {{ $('text change').item.json.matchScore }}  AI Analysis: {{ $('text change').item.json.aiOutput }}  Review this CV and manually decide whether this candidate is invited or rejected.",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1648,
+        -32
+      ],
+      "id": "21942564-f515-40ce-8198-d772660ce07b",
+      "name": "Notify HR - Doubtful case",
+      "webhookId": "75dd4c69-1382-4e20-8815-68e24b232362",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "7IgErtri2lQcZBC5",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -16,
+        448
+      ],
+      "id": "b6957229-4ec9-46d1-935c-a94c0ae73e19",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "7IgErtri2lQcZBC5",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.snippet }}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        816,
+        528
+      ],
+      "id": "3292b51d-0f67-4bf7-89ca-4084cff7ca85",
+      "name": "Basic LLM Chain1"
+    },
+    {
+      "parameters": {
+        "model": "qwen3:8b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmOllama",
+      "typeVersion": 1,
+      "position": [
+        816,
+        704
+      ],
+      "id": "810b76a0-1b75-476e-b6c6-2c31e6cc651b",
+      "name": "Ollama Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "0W43FbasueRtbj1r",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Genereer 3 korte, relevante interviewvragen gebaseerd op dit CV, gericht op de functie \"Automation AI\". Geef alleen de 3 vragen, genummerd, geen inleiding of uitleg.\n\nCV-samenvatting:\n{{ $('text change').item.json.aiOutput }}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1408,
+        -544
+      ],
+      "id": "cd3a0a80-6c09-4753-a7b2-eb1715982003",
+      "name": "Binary to Text 2"
+    },
+    {
+      "parameters": {
+        "content": "## trigger gmail\n\n**Received mail from sender and get data to here**",
+        "height": 288,
+        "color": "#4F7A28"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        320
+      ],
+      "id": "79e949c0-b9c7-402a-a024-0b8d715f3519",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "content": "## filter\n\n**Checking false or true**",
+        "height": 256,
+        "color": "#0056D6"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        176,
+        352
+      ],
+      "id": "c3bf0be5-ca4b-47cd-978b-915a709d379d",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e0e11bee-31cd-4c8a-b141-b5293057d608",
+              "leftValue": "={{ $json.labels.some(l => l.name === 'SENT') }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        240,
+        448
+      ],
+      "id": "952384b6-a93e-4a79-8860-7e41498cefc7",
+      "name": "filter boolean false or true"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "binary to text": {
+      "main": [
+        [
+          {
+            "node": "text change",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PDF to Binary": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CV Form": {
+      "main": [
+        [
+          {
+            "node": "PDF to Binary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "qwen3:8b": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "binary to text",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "text change": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "answer cv score result": {
+      "main": [
+        [
+          {
+            "node": "reaction on your application rejection",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "testing": {
+      "main": [
+        [
+          {
+            "node": "Notify HR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Invited for an interview": {
+      "main": [
+        [
+          {
+            "node": "Log accepted application",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "reaction on your application rejection": {
+      "main": [
+        [
+          {
+            "node": "Log rejected application",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "binary to text",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HR review application",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify HR": {
+      "main": [
+        [
+          {
+            "node": "Invited for an interview",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Binary to Text 2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Binary to Text 2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notify HR - Doubtful case",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "answer cv score result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "filter boolean false or true",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Binary to Text 2": {
+      "main": [
+        [
+          {
+            "node": "testing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "filter boolean false or true": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify HR - Doubtful case": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "fbf27a81-8b86-479b-aace-67cabdc19969",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5dde7816d102929505e06f082916113a5da779a70b5c674a04bfb1a774a96290"
+  },
+  "nodeGroups": [],
+  "id": "8UcyOTjMTyTJ7vBy",
+  "tags": []
+}
