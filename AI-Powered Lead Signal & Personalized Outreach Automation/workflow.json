@@ -1,0 +1,184 @@
+{
+  "name": "AI-Powered Lead Signal & Personalized Outreach Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lead-inbound"
+      },
+      "name": "Webhook - Lead Inbound",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 100],
+      "webhookId": "<generated-by-n8n>"
+    },
+    {
+      "parameters": {
+        "mode": "enrichData",
+        "dataToEnrich": {
+          "company": "{{ $json.company }}",
+          "email": "{{ $json.email }}",
+          "industry": "{{ $json.industry }}",
+          "website": "{{ $json.website }}"
+        }
+      },
+      "name": "Data Enrichment Node",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [450, 100],
+      "alwaysOutputData": true,
+      "code": "// Simulate enrichment with company data\nreturn [
+  {
+    ...items[0].json,
+    companySize: items[0].json.company ? Math.floor(Math.random() * 5000) + 100 : null,
+    enrichedAt: new Date().toISOString(),
+    lastWebsiteVisit: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString()
+  }
+];"
+    },
+    {
+      "parameters": {
+        "mode": "scoreLeads",
+        "scoreLogic": "behavior + firmographic"
+      },
+      "name": "AI Signal Detection & Scoring",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [650, 100],
+      "alwaysOutputData": true,
+      "code": "// Calculate lead score based on signals\nconst lead = items[0].json;\nlet score = 50;\n\n// Behavior signals\nif (lead.lastWebsiteVisit) score += 15;\nif (lead.emailEngagement) score += 10;\nif (lead.industry === 'Technology') score += 10;\n\n// Firmographic signals\nif (lead.companySize > 100 && lead.companySize < 5000) score += 15;\n\n// Recency boost\nconst daysAgo = (Date.now() - new Date(lead.lastWebsiteVisit)) / (1000 * 60 * 60 * 24);\nif (daysAgo < 7) score += 10;\n\nconst classification = score >= 70 ? 'Hot' : score >= 40 ? 'Warm' : 'Cold';\n\nreturn [
+  {
+    ...lead,
+    leadScore: Math.min(100, score),
+    classification,
+    signalStrength: score > 70 ? 'Strong' : score > 40 ? 'Moderate' : 'Weak'
+  }
+];"
+    },
+    {
+      "parameters": {
+        "resource": "ChatCompletion",
+        "model": "gpt-4",
+        "options": {
+          "temperature": 0.7,
+          "maxTokens": 150
+        }
+      },
+      "name": "OpenAI - Generate Personalized Message",
+      "type": "n8n-nodes-base.openai",
+      "typeVersion": 1,
+      "position": [850, 100],
+      "credentials": {
+        "openaiApi": "<your-openai-api-key>"
+      },
+      "alwaysOutputData": true,
+      "onError": "continueErrorMessage",
+      "notesInFlow": true,
+      "notes": "Generates personalized outreach message based on lead signals"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": [
+            {
+              "condition": "classification == 'Hot'",
+              "output": 1
+            },
+            {
+              "condition": "classification == 'Warm'",
+              "output": 2
+            },
+            {
+              "condition": "classification == 'Cold'",
+              "output": 3
+            }
+          ]
+        }
+      },
+      "name": "IF - Channel Routing",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1050, 100]
+    },
+    {
+      "parameters": {
+        "sendTo": "{{ $json.email }}",
+        "subject": "Personal Outreach: {{ $json.company }} Opportunity",
+        "html": "<p>Hi {{ $json.firstName }},</p><p>{{ $json.personalizedMessage }}</p><p>Best regards,<br>Sales Team</p>"
+      },
+      "name": "Send Email - Hot Lead",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [1050, 50],
+      "credentials": {
+        "gmail": "<your-gmail-credentials>"
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "{{ $json.email }}",
+        "subject": "Thought of You - {{ $json.company }}",
+        "html": "<p>Hi {{ $json.firstName }},</p><p>{{ $json.personalizedMessage }}</p>"
+      },
+      "name": "Send Email - Warm Lead",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [1050, 150]
+    },
+    {
+      "parameters": {
+        "sendTo": "{{ $json.email }}",
+        "subject": "Quick Note",
+        "html": "<p>Hi {{ $json.firstName }},</p><p>{{ $json.personalizedMessage }}</p>"
+      },
+      "name": "Send Email - Cold Lead",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [1050, 250]
+    },
+    {
+      "parameters": {
+        "documentId": "<your-airtable-base-id>",
+        "table": "Leads",
+        "options": {}
+      },
+      "name": "Airtable - Log Outreach",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 1,
+      "position": [1250, 100],
+      "credentials": {
+        "airtableApi": "<your-airtable-token>"
+      }
+    }
+  ],
+  "connections": {
+    "Webhook - Lead Inbound": {
+      "main": [[{"node": "Data Enrichment Node", "branch": 0}]]
+    },
+    "Data Enrichment Node": {
+      "main": [[{"node": "AI Signal Detection & Scoring", "branch": 0}]]
+    },
+    "AI Signal Detection & Scoring": {
+      "main": [[{"node": "OpenAI - Generate Personalized Message", "branch": 0}]]
+    },
+    "OpenAI - Generate Personalized Message": {
+      "main": [[{"node": "IF - Channel Routing", "branch": 0}]]
+    },
+    "IF - Channel Routing": {
+      "main": [
+        [{"node": "Send Email - Hot Lead", "branch": 0}],
+        [{"node": "Send Email - Warm Lead", "branch": 0}],
+        [{"node": "Send Email - Cold Lead", "branch": 0}]
+      ]
+    },
+    "Send Email - Hot Lead": {
+      "main": [[{"node": "Airtable - Log Outreach", "branch": 0}]]
+    },
+    "Send Email - Warm Lead": {
+      "main": [[{"node": "Airtable - Log Outreach", "branch": 0}]]
+    },
+    "Send Email - Cold Lead": {
+      "main": [[{"node": "Airtable - Log Outreach", "branch": 0}]]
+    }
+  }
+}
