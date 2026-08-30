@@ -1,0 +1,487 @@
+{
+  "name": "AI-Powered Lead Signal & Personalized Outreach Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Webhook - Receive Lead\n**Receives lead data through a POST request and starts the automation workflow.**",
+        "height": 304,
+        "color": "#831100"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        -48
+      ],
+      "id": "228254c6-0edc-4541-a685-811cc3e0ca7a",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## AI Lead Analysis\n**Uses Ollama to analyze the lead and determine the lead score, temperature, intent and reason.**",
+        "height": 528,
+        "width": 272,
+        "color": "#606060"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        192,
+        -48
+      ],
+      "id": "59fa101e-1016-4c0e-bca9-746a2d842acb",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Lead Qualification\n**Checks whether the lead score meets the qualification threshold and routes the lead accordingly.**",
+        "height": 352,
+        "width": 224,
+        "color": "#4F7A28"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        752,
+        -48
+      ],
+      "id": "d185b9bd-f7d9-4f01-9ced-b3a51047e02f",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Send Outreach \n**Sends the AI-generated personalized message to a qualified lead.**",
+        "height": 304,
+        "width": 224,
+        "color": "#4F7A28"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1552,
+        -48
+      ],
+      "id": "98e9979f-95d9-48ff-b15b-bac1fce0dda6",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## AI Personalized Outreach\n**Uses Ollama to create a short, personalized outreach message for qualified leads.**",
+        "height": 416,
+        "width": 288,
+        "color": "#606060"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1008,
+        -48
+      ],
+      "id": "d0d1d159-f337-47b2-99fa-b954bde1394b",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Not Qualified\n**Stores the status, lead score and reason for leads that do not meet the qualification threshold.**",
+        "height": 368,
+        "width": 192,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1056,
+        384
+      ],
+      "id": "4e761a13-fe37-48b2-bf1c-87aec2af92ac",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "## Prepare Email\n**Prepares the AI-generated message and lead information for the Gmail step.**",
+        "height": 352,
+        "width": 208,
+        "color": "#A96800"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1328,
+        -48
+      ],
+      "id": "69817472-4f13-4f41-ac1c-5f2a467e040c",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "## Progress AI Result \n**Parses the AI response, extracts the lead score and analysis, and keeps the original lead data for the next steps.**",
+        "height": 352,
+        "color": "#A96800"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        496,
+        -48
+      ],
+      "id": "25dec30e-05dc-4f98-bae6-8b77253530e1",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the lead below.\n\nReturn ONLY this JSON object. Nothing else.\n\n{\n  \"lead_score\": 85,\n  \"temperature\": \"HOT\",\n  \"intent\": \"high\",\n  \"reason\": \"Short explanation\"\n}\n\nReplace the example values with your analysis.\n\nLead:\nName: {{ $json.body.name }}\nCompany: {{ $json.body.company }}\nRole: {{ $json.body.role }}\nInterest: {{ $json.body.interest }}\nSource: {{ $json.body.source }}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        224,
+        96
+      ],
+      "id": "1377f5fc-08d9-4b8a-99d1-083ba3a4405f",
+      "name": "AI Lead Analysis"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lead-intake",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        96
+      ],
+      "id": "163fcb89-ee0c-4caa-8afb-6c0e0715cf79",
+      "name": "Receive Lead",
+      "webhookId": "3c136f46-9d71-442d-aee5-fce0de5773a5"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const text = $json.text;\n\nconst start = text.indexOf('{');\nconst end = text.lastIndexOf('}');\n\nif (start === -1 || end === -1) {\n  throw new Error('Geen JSON gevonden in text');\n}\n\nconst jsonText = text.substring(start, end + 1);\nconst result = JSON.parse(jsonText);\n\nreturn {\n  json: {\n    name: $('Receive Lead').item.json.body.name,\n    company: $('Receive Lead').item.json.body.company,\n    role: $('Receive Lead').item.json.body.role,\n    interest: $('Receive Lead').item.json.body.interest,\n    source: $('Receive Lead').item.json.body.source,\n\n    lead_score: Number(result.lead_score),\n    temperature: result.temperature,\n    intent: result.intent,\n    reason: result.reason\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        144
+      ],
+      "id": "1302e4aa-4b10-4ed3-9040-795f399fbb43",
+      "name": "Progress AI Result"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a B2B growth marketing assistant.\n\nCreate a short, professional and personalized outreach message for this qualified lead.\n\nDo not invent information.\nUse only the lead information provided below.\n\nThe message should:\n- mention the person's role or company naturally\n- reference their interest in AI automation\n- be helpful rather than overly sales-focused\n- have a clear but low-pressure call to action\n- be suitable for email or LinkedIn\n- maximum 100 words\n\nLead:\nName: {{ $json.name }}\nCompany: {{ $json.company }}\nRole: {{ $json.role }}\nInterest: {{ $json.interest }}\nSource: {{ $json.source }}\n\nLead score: {{ $json.lead_score }}\nTemperature: {{ $json.temperature }}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1024,
+        96
+      ],
+      "id": "5ae70c66-6325-481e-abaf-c37c6fe61fe1",
+      "name": "AI Personalized Outreach"
+    },
+    {
+      "parameters": {
+        "jsCode": "return {\n  json: {\n    text: $json.text,\n    company: $('Receive Lead').item.json.body.company,\n    email: $('Receive Lead').item.json.body.email\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1392,
+        144
+      ],
+      "id": "b216bde9-743e-43a2-a766-7245dde622c1",
+      "name": "Prepare Email"
+    },
+    {
+      "parameters": {
+        "model": "qwen3:8b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmOllama",
+      "typeVersion": 1,
+      "position": [
+        304,
+        320
+      ],
+      "id": "c339e6f3-d0c2-4e32-a546-c1457e3ac8c0",
+      "name": "Lead Analysis",
+      "credentials": {
+        "ollamaApi": {
+          "id": "0W43FbasueRtbj1r",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "qwen3:8b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmOllama",
+      "typeVersion": 1,
+      "position": [
+        1168,
+        256
+      ],
+      "id": "4905658e-002f-402b-b243-a5a6fcb74354",
+      "name": "Outreach Generation",
+      "credentials": {
+        "ollamaApi": {
+          "id": "0W43FbasueRtbj1r",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "4e415131-8945-468b-9368-392b71a9ce95",
+              "leftValue": "={{ $json.lead_score }}",
+              "rightValue": 70,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        800,
+        144
+      ],
+      "id": "cd36e385-e2ea-4b05-9b95-6adc73b28923",
+      "name": "Lead Qualification"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ac4a6a59-1ad1-400b-b3ea-620205a0f7c6",
+              "name": "status",
+              "value": "Not qualified",
+              "type": "string"
+            },
+            {
+              "id": "666d27e4-78af-4c97-8c80-b8ee71eacb1d",
+              "name": "lead_score",
+              "value": "={{ $json.lead_score }}",
+              "type": "string"
+            },
+            {
+              "id": "5cee4505-43da-4368-b407-c3ebc4e4670d",
+              "name": "reason",
+              "value": "={{ $json.reason }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1104,
+        592
+      ],
+      "id": "c9f03f75-1aca-41a7-b9e2-cf0e4f9c456b",
+      "name": "Not Qualified"
+    },
+    {
+      "parameters": {
+        "sendTo": "donavan.mohaloe@gmail.com",
+        "subject": "=AI automation for {{ $json.company }}",
+        "message": "={{ $json.text }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1616,
+        96
+      ],
+      "id": "02430ace-26f0-4c5b-b54e-823c59f7d080",
+      "name": "Send Outreach",
+      "webhookId": "45ddfa34-ccd7-49a5-acd5-2a09f4953d19",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "7IgErtri2lQcZBC5",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Receive Lead": [
+      {
+        "json": {
+          "headers": {
+            "host": "nonantagonistic-myron-glaiked.ngrok-free.dev",
+            "user-agent": "PostmanRuntime/7.52.0",
+            "content-length": "135",
+            "accept": "*/*",
+            "accept-encoding": "gzip, deflate, br",
+            "cache-control": "no-cache",
+            "content-type": "application/json",
+            "postman-token": "c2d1c365-0fa4-44a0-b77b-ffdf905e6716",
+            "x-forwarded-for": "2a02:a443:b21f:0:3c30:9693:fcd2:49ee",
+            "x-forwarded-host": "nonantagonistic-myron-glaiked.ngrok-free.dev",
+            "x-forwarded-proto": "https"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "name": "Sarah",
+            "company": "ExampleTech",
+            "role": "Marketing Manager",
+            "interest": "AI automation",
+            "source": "LinkedIn"
+          },
+          "webhookUrl": "https://nonantagonistic-myron-glaiked.ngrok-free.dev/webhook-test/lead-intake",
+          "executionMode": "test"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "AI Lead Analysis": {
+      "main": [
+        [
+          {
+            "node": "Progress AI Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Receive Lead": {
+      "main": [
+        [
+          {
+            "node": "AI Lead Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Progress AI Result": {
+      "main": [
+        [
+          {
+            "node": "Lead Qualification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Personalized Outreach": {
+      "main": [
+        [
+          {
+            "node": "Prepare Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Email": {
+      "main": [
+        [
+          {
+            "node": "Send Outreach",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lead Analysis": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Lead Analysis",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Outreach Generation": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Personalized Outreach",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lead Qualification": {
+      "main": [
+        [
+          {
+            "node": "AI Personalized Outreach",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Not Qualified",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Not Qualified": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "c703f2dc-e906-4599-ab85-be8cf761bf75",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5dde7816d102929505e06f082916113a5da779a70b5c674a04bfb1a774a96290"
+  },
+  "nodeGroups": [],
+  "id": "nWzzsBjsApQ2sCa7",
+  "tags": []
+}
