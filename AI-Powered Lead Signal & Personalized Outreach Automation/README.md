@@ -1,157 +1,169 @@
-# AI-Powered Lead Signal & Personalized Outreach Automation (n8n)
+# AI-Powered Lead Qualification & Growth Automation
 
-Een geavanceerde sales automation workflow gebouwd met **n8n**, die prospects automatisch identificeert, classificeert en benadert met **gepersonaliseerde berichten** op basis van AI-gegenereerde signalen.
+## Overview
 
----
+This project is an AI-powered lead qualification and growth automation workflow built with **n8n** and **Ollama**.
 
-## 🚀 Wat doet deze workflow?
+The workflow receives lead information through a webhook, uses AI to analyze and score the lead, and automatically decides whether the lead should receive personalized outreach.
 
-Dit systeem:
-- Ontvangt prospects via webhook, CRM-integratie of API
-- Verrijkt leaddata met bedrijfscontext (bedrijfsgrootte, industrie, etc.)
-- Analyseert koopintentie via AI-signalen (website-bezoek, engagement, etc.)
-- Genereert een **kwaliteitsscore** (0–100) voor prioritering
-- Bepaalt de beste communicatiekanaal (email, LinkedIn, phone)
-- Genereert **persoonlijke outreach-berichten** via AI (OpenAI/Claude)
-- Verstuurt berichten via meerdere kanalen (Gmail, LinkedIn, HubSpot, Pipedrive)
-- Logt alle interacties in CRM voor vervolgacties
-- Implementeert A/B testing voor berichtinhoud
+The goal is to demonstrate how AI can be combined with workflow automation to support lead qualification and marketing processes.
 
----
+## Problem
 
-## 🧠 Waarom is dit project sterk?
+Manually reviewing and qualifying leads can take time, especially when there are many incoming leads.
 
-**Combinatie van strategische elementen:**
-1. **AI-Signaaldetectie** – Echt koopgedrag analyseren, niet alleen demografie
-2. **Persoonlijke berichten** – Elke prospect ontvangt getailleerde, relevante outreach
-3. **Multi-channel** – Flexibiliteit in communicatiekanalen
-4. **Schaalbaar** – Automatiseert 100s of 1000s leads zonder handmatig werk
-5. **Meetbaar** – Tracking van open rates, response rates, conversies
+A company needs a way to:
 
-Dit weerspiegelt hoe moderne **RevOps** (Revenue Operations) teams werken.
+* Analyze incoming leads
+* Identify high-quality leads
+* Prioritize leads based on their potential
+* Create personalized outreach
+* Avoid sending unnecessary messages to low-quality leads
 
----
+## Solution
 
-## 🏗️ Architectuuroverzicht
+This workflow automates the process from **lead intake to outreach**.
 
-De workflow bestaat uit deze modulaire stappen:
+A lead sends JSON data to the webhook. Ollama analyzes the lead and generates a lead score, temperature, intent and reason.
 
-### **1. Lead Ingestion** – Data binnenhalen
-- Webhook ontvangt incoming leads
-- Integraties: HubSpot, Salesforce, Apollo.io, LinkedIn Sales Navigator
-- Optioneel: CSV import of direct database query
+JavaScript processes the AI response and keeps the lead information available for the next steps.
 
-### **2. Data Enrichment** – Context toevoegen
-- Normaliseert leaddata (naam, email, bedrijf, etc.)
-- Verrijkt met bedrijfsinfo via API's (Clearbit, Hunter.io, ZoomInfo)
-- Voegt engagement-geschiedenis toe (website visits, email opens)
-- Bepaalt bedrijfsgrootte, industrie, locatie
+An IF node then checks the lead score:
 
-### **3. Signal Detection** – Koopintentie analyseren
-- Analyseert gedragspatronen:
-  - Recente website-bezoeken
-  - Pagina's bekeken (pricing, demo, case studies)
-  - Engagement-frequentie
-  - Firmographic fit (target market match)
-- Mock AI Analysis: regelgebaseerde scoring
-- (Optioneel) Echte AI-modellen: OpenAI GPT of Claude
+* **Score ≥ 70:** The lead is considered qualified and receives an AI-generated personalized outreach message.
+* **Score < 70:** The lead is marked as not qualified and is not contacted automatically.
 
-### **4. Lead Scoring** – Prioritering
-- Berekent score op basis van:
-  - Signaalsterkte (0–100)
-  - Fit-score (match met ideal customer profile)
-  - Urgentiescore (recency van signalen)
-- Resultaat: **Hot / Warm / Cold** klassificatie
+## Workflow
 
-### **5. Message Generation** – Persoonlijke copy
-- OpenAI/Claude genereert gepersonaliseerde berichten:
-  - Vermeldt specifieke signalen ("Ik zag dat je onze pricing-pagina bezocht")
-  - Refereert aan bedrijfscontext (branche, grootte)
-  - Sluit aan op prospect's pijnpunten
-- Variaties voor A/B testing
+```text
+Lead / External Source
+        ↓
+     Webhook
+        ↓
+  AI Lead Analysis
+        ↓
+ JavaScript Processing
+        ↓
+ Lead Qualification
+        ↓
+    ┌───┴────┐
+    ↓        ↓
+ TRUE       FALSE
+    ↓        ↓
+AI Outreach  Not Qualified
+    ↓
+JavaScript
+    ↓
+ Gmail
+```
 
-### **6. Channel Selection** – Kanaalrouting
-- Bepaalt beste kanaal per prospect:
-  - **Hot leads** → Direct phone call (Twilio) + personal email
-  - **Warm leads** → LinkedIn message + follow-up email
-  - **Cold leads** → Automated email sequence
+## Technologies
 
-### **7. Outreach Execution** – Berichten verzenden
-- Email via Gmail/SendGrid
-- LinkedIn via native API of automation tool
-- SMS via Twilio
-- CRM update (HubSpot/Pipedrive) met outreach-data
+* **n8n** — Workflow automation
+* **Ollama** — Local AI/LLM processing
+* **JavaScript** — Data processing and JSON parsing
+* **Webhooks** — Receiving lead data
+* **JSON** — Data format
+* **Gmail** — Automated outreach
 
-### **8. Tracking & Logging** – Resultaten monitoren
-- Registreert:
-  - Wanneer bericht is verstuurd
-  - Email open/click events
-  - Response/reply events
-  - CRM-update met outcome
-- Triggert vervolgacties bij positive signals
+## AI Lead Analysis
 
-### **9. A/B Test Analysis** – Optimalisatie
-- Vergelijkt open rates, reply rates per bericht-variant
-- Leert welke toon/aanpak beste werkt
-- Optimaliseert toekomstige berichten
+The first AI step analyzes the incoming lead and determines:
 
----
+* **Lead score** — numerical qualification score
+* **Temperature** — HOT / other classification
+* **Intent** — estimated level of interest
+* **Reason** — explanation for the score
 
-## 🛠 Gebruikte Technologieën
+Example:
 
-| Component | Tool |
-|-----------|------|
-| **Workflow Automation** | n8n |
-| **Lead Data Source** | HubSpot, Salesforce, Apollo.io, Webhooks |
-| **Data Enrichment** | Clearbit, Hunter.io, ZoomInfo |
-| **AI Text Generation** | OpenAI GPT-4, Claude, or Ollama (local) |
-| **Email** | Gmail, SendGrid, Mailgun |
-| **LinkedIn** | LinkedIn API (native) or automation tools |
-| **SMS** | Twilio |
-| **CRM/Database** | HubSpot, Pipedrive, Airtable |
-| **Analytics** | Google Sheets, Data Studio |
+```json
+{
+  "lead_score": 85,
+  "temperature": "HOT",
+  "intent": "high",
+  "reason": "Strong interest in AI automation."
+}
+```
 
----
+## Qualification Logic
 
-## 📊 Use Cases
+The workflow uses a score threshold of **70**.
 
-1. **SaaS Sales Teams** – Automatisch leads met koopsignalen benaderen
-2. **Agency Outreach** – Lead generation en prospecting op schaal
-3. **Enterprise Sales** – AI-gestuurde account-based marketing (ABM)
-4. **Recruitment** – Gepersonaliseerde outreach naar kandidaten
-5. **Partnership Development** – Automatisch relevante partners identificeren
+```text
+Lead score >= 70
+        ↓
+     Qualified
+        ↓
+Personalized outreach
+```
 
----
+```text
+Lead score < 70
+        ↓
+   Not qualified
+        ↓
+No automated outreach
+```
 
-## 📌 Status
+## Personalized Outreach
 
-✅ Architecture designed  
-⏳ Workflow implementation in progress  
-⏳ AI integration (OpenAI, Claude)  
-⏳ Multi-channel routing setup  
-⏳ Testing & optimization  
+Qualified leads are sent to a second AI step.
 
----
+Ollama generates a short personalized outreach message based on the available lead information, such as:
 
-## 🔐 Configuratie & Authenticatie
+* Name
+* Company
+* Role
+* Interest
+* Lead score
 
-Vereiste API-sleutels:
-- **OpenAI** – Text generation
-- **Gmail** – Email versturing
-- **LinkedIn** – Message API
-- **HubSpot/Pipedrive** – CRM data
-- **Clearbit/Hunter** – Data enrichment (optioneel)
-- **Twilio** – SMS (optioneel)
+The generated message is then prepared and sent through Gmail.
 
----
+## Test Cases
 
-## 📚 Documentatie
+The workflow was tested with multiple fictional leads:
 
-Gebruik `workflow.json` om direct in n8n te importeren.
-Zie `workflow-overview.png` voor visueel overzicht.
+### Test 1 — Qualified Lead
 
----
+A lead with strong interest in AI automation received a high score and followed the **TRUE** branch.
 
-## 👤 Auteur
+**Result:** Personalized outreach was generated and sent through Gmail.
 
-Gemaakt door **Donovan** – Sales Automation Portfolio Project
+### Test 2 — Not Qualified Lead
+
+A lead with low interest received a score below the qualification threshold.
+
+**Result:** The lead followed the **FALSE** branch and was marked as not qualified.
+
+### Test 3 — Additional Test
+
+An additional fictional lead was used to verify that the workflow could process different lead information and route the result correctly.
+
+## What I Learned
+
+Through this project I practiced:
+
+* Building webhook-based automations
+* Working with JSON data
+* Connecting local LLMs with n8n
+* Using Ollama for AI analysis
+* Processing AI output with JavaScript
+* Creating conditional workflow logic
+* Generating personalized AI content
+* Connecting automation workflows to Gmail
+* Testing different workflow outcomes
+
+## Project Structure
+
+```text
+AI-Powered-Lead-Growth-Automation/
+│
+├── AI-Powered Lead Growth Automation.json
+├── workflow-screenshot.png
+└── README.md
+```
+
+## Disclaimer
+
+All lead data used in this project is fictional and created for testing and demonstration purposes.
