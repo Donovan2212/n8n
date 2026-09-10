@@ -1,4 +1,4 @@
-## AI Research & Knowledge Automation Systems
+## AI Research & Knowledge Automation Systemstest
 
 Een n8n-workflow die een onderzoeksvraag van een gebruiker omzet in een goed onderbouwd, AI-gegenereerd antwoord. De workflow plant onderzoeksstappen, doorzoekt het web, slaat bevindingen op in een vectordatabase, en haalt relevante context op (RAG) om een onderbouwd eindantwoord te genereren.
 
